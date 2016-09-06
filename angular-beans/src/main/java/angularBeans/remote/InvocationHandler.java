@@ -167,9 +167,9 @@ public class InvocationHandler implements Serializable {
 			JsonArray args = params.get("args").getAsJsonArray();
 
 			
-			for (Method mt : service.getClass().getMethods()) {
+			for (Method mt : service.getClass().getDeclaredMethods()) {
 
-				if (mt.getName().equals(methodName)) {
+				if (mt.getName().equals(methodName) && !Modifier.toString(mt.getModifiers()).contains("volatile")) {
 					m=mt;
 					Type[] parameters = mt.getParameterTypes();
 
@@ -238,7 +238,7 @@ public class InvocationHandler implements Serializable {
 		} else {
 			
 			
-			for (Method mt : service.getClass().getMethods()) {
+			for (Method mt : service.getClass().getDeclaredMethods()) {
 
 				if (mt.getName().equals(methodName)) {
 
