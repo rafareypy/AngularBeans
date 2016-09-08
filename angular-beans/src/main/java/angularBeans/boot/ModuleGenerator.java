@@ -18,6 +18,7 @@ import static angularBeans.events.Callback.BEFORE_SESSION_READY;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +27,6 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import angularBeans.api.CORS;
@@ -296,14 +296,14 @@ public class ModuleGenerator implements Serializable {
 			return StaticJsCache.CACHED_BEAN_STATIC_PART.get(bean.getTargetClass());
 		}
 
-		Method[] nativesMethods = Object.class.getMethods();
+		Method[] nativesMethods = Object.class.getDeclaredMethods();
 
 		for (Method m : bean.getMethods()) {
 
 			boolean corsEnabled = false;
 			boolean isNative = false;
 			for (Method nativeMethod : nativesMethods) {
-				if (nativeMethod.equals(m))
+				if (nativeMethod.equals(m) && !Modifier.isVolatile(m.getModifiers()))
 					isNative = true;
 			}
 
