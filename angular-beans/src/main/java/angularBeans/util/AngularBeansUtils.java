@@ -10,6 +10,7 @@ import static angularBeans.util.Accessors.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Calendar;
 import java.util.UUID;
@@ -139,10 +140,10 @@ class LobWrapperJsonAdapter implements JsonSerializer<LobWrapper> {
 		String id = "";
 		Class clazz = container.getClass();
 
-		for (Method m : clazz.getMethods()) {
+		for (Method m : clazz.getDeclaredMethods()) {
 			// TODO to many nested statement
 			if ((m.getName().startsWith(GETTER_PREFIX) || m.getName().startsWith(BOOLEAN_GETTER_PREFIX))
-					&& m.getReturnType().equals(LobWrapper.class)) {
+					&& m.getReturnType().equals(LobWrapper.class) && !Modifier.isVolatile(m.getModifiers())) {
 				try {
 
 					Call lobSource = new Call(container, m);
