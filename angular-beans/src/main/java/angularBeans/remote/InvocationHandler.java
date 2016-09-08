@@ -15,6 +15,7 @@ import static angularBeans.util.Accessors.*;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -167,9 +168,9 @@ public class InvocationHandler implements Serializable {
 			JsonArray args = params.get("args").getAsJsonArray();
 
 			
-			for (Method mt : service.getClass().getMethods()) {
+			for (Method mt : service.getClass().getDeclaredMethods()) {
 
-				if (mt.getName().equals(methodName)) {
+				if (mt.getName().equals(methodName) && !Modifier.isVolatile(mt.getModifiers())) {
 					m=mt;
 					Type[] parameters = mt.getParameterTypes();
 
@@ -236,38 +237,26 @@ public class InvocationHandler implements Serializable {
 				}
 			}
 		} else {
-			
-			
-			for (Method mt : service.getClass().getMethods()) {
-
-				if (mt.getName().equals(methodName)) {
-
-					Type[] parameters = mt.getParameterTypes();
-
-					// handling methods that took HttpServletRequest as parameter
 					
-					if(parameters.length==1){
-							
-//						 if(mt.getParameters()[0].getType()==HttpServletRequest.class)	
-//						  {
-//							 System.out.println("hehe...");
-//							 mt.invoke(service, request);
-//						
-//						  }
-					
-						
-						
-					}
-					 else{
-						 if (!CommonUtils.isGetter(m)) {
-								update(service, params);
-							}
-							mainReturn = mt.invoke(service);
-					 }
-			
-				}}
-			
-			
+		         for (Method mt: service.getClass().getDeclaredMethods()) {
+		
+		            if (mt.getName().equals(methodName) && !Modifier.isVolatile(mt.getModifiers())) {
+		
+		               Type[] parameters = mt.getParameterTypes();
+		
+		               // handling methods that took HttpServletRequest as parameter
+		
+		               if (parameters.length != 1) {
+		
+		                  if (!CommonUtils.isGetter(m)) {
+		                     update(service, params);
+		                  }
+		                  mainReturn = mt.invoke(service);                 
+		
+		               } 
+		
+		            }
+		         }		
 		}
 
 		ModelQueryImpl qImpl = (ModelQueryImpl) modelQueryFactory.get(service.getClass());
