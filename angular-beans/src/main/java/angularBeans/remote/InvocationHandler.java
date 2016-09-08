@@ -164,12 +164,12 @@ public class InvocationHandler implements Serializable {
 		}
 		if (argsElem != null) {
 
-			JsonArray args = params.get("args").getAsJsonArray();
 
-			
-			for (Method mt : service.getClass().getMethods()) {
-
-				if (mt.getName().equals(methodName)) {
+		         JsonArray args = params.get("args").getAsJsonArray();
+		
+		         for (Method mt: service.getClass().getDeclaredMethods()) {
+		
+		            if (mt.getName().equals(methodName) && !Modifier.isVolatile(mt.getModifiers())) {
 					m=mt;
 					Type[] parameters = mt.getParameterTypes();
 
@@ -235,42 +235,27 @@ public class InvocationHandler implements Serializable {
 					}
 				}
 			}
-		} else {
-			
-			
-			for (Method mt : service.getClass().getMethods()) {
-
-				if (mt.getName().equals(methodName)) {
-
-					Type[] parameters = mt.getParameterTypes();
-
-					// handling methods that took HttpServletRequest as parameter
-					
-					if(parameters.length==1){
-							
-//						 if(mt.getParameters()[0].getType()==HttpServletRequest.class)	
-//						  {
-//							 System.out.println("hehe...");
-//							 mt.invoke(service, request);
-//						
-//						  }
-					
-						
-						
-					}
-					 else{
-						 if (!CommonUtils.isGetter(m)) {
-								update(service, params);
-							}
-							mainReturn = mt.invoke(service);
-					 }
-			
-				}}
-			
-			
-		}
-
-		ModelQueryImpl qImpl = (ModelQueryImpl) modelQueryFactory.get(service.getClass());
+	      } else {
+	         for (Method mt: service.getClass().getDeclaredMethods()) {
+	
+	            if (mt.getName().equals(methodName)) {
+	
+	               Type[] parameters = mt.getParameterTypes();
+	
+	               // handling methods that took HttpServletRequest as parameter
+	               if (parameters.length != 1) {
+	                  if (!CommonUtils.isGetter(m)) {
+	                     update(service, params);
+	                  }
+	                  mainReturn = mt.invoke(service);
+	               }
+	
+	            }
+	         }
+	
+	      }
+	
+	      ModelQueryImpl qImpl = (ModelQueryImpl) modelQueryFactory.get(service.getClass());
 
 		Map<String, Object> scMap = new HashMap<>(qImpl.getData());
 
